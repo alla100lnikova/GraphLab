@@ -38,13 +38,14 @@ void CGraphBase::DeleteNode(string Node)
 	}
 	m_Graph.erase(Node);
 
-	for (auto nodes : m_Graph)
+	for (auto& nodes : m_Graph)
 	{
 		for (auto node : nodes.second)
 		{
 			if (node->GetEndNode()->GetLabel() == Node)
 			{
-				remove(nodes.second.begin(), nodes.second.end(), node);
+				nodes.second.erase(remove(nodes.second.begin(), nodes.second.end(), node), nodes.second.end());
+				break;
 			}
 		}
 	}
@@ -55,6 +56,8 @@ void CGraphBase::DeleteNode(string Node)
 void CGraphBase::AddEdge(string NodeBegin, string NodeEnd, double Weight)
 {
 	AddEdge(m_Graph, NodeBegin, NodeEnd, Weight);
+	if (!IsOriented())
+		AddEdge(m_Graph, NodeEnd, NodeBegin, Weight);
 }
 
 void CGraphBase::AddEdge(map<string, vector<CEdge*>>& Graph, string NodeBegin, string NodeEnd, double Weight)
@@ -72,7 +75,7 @@ void CGraphBase::AddEdge(map<string, vector<CEdge*>>& Graph, string NodeBegin, s
 	Graph[NodeBegin].push_back(new CEdge(new CNode(NodeEnd), Weight));
 }
 
-void CGraphBase::DeleteEdge(string NodeBegin, string NodeEnd)
+void CGraphBase::DeleteEdgeIn(string NodeBegin, string NodeEnd)
 {
 	if (m_Graph.find(NodeBegin) == m_Graph.end())
 	{
@@ -83,11 +86,18 @@ void CGraphBase::DeleteEdge(string NodeBegin, string NodeEnd)
 	{
 		if (node->GetEndNode()->GetLabel() == NodeEnd)
 		{
-			remove(m_Graph[NodeBegin].begin(), m_Graph[NodeBegin].end(), node);
+			m_Graph[NodeBegin].erase(remove(m_Graph[NodeBegin].begin(), m_Graph[NodeBegin].end(), node), m_Graph[NodeBegin].end());
 			delete node;
 			break;
 		}
 	}
+}
+
+void CGraphBase::DeleteEdge(string NodeBegin, string NodeEnd)
+{
+	DeleteEdgeIn(NodeBegin, NodeEnd);
+	if (!IsOriented())
+		DeleteEdgeIn(NodeEnd, NodeBegin);
 	SetInfo();
 }
 
@@ -215,9 +225,10 @@ CEdge* CGraphBase::ImportEdge(string Label, double Weight)
 
 void CGraphBase::PrintGraph()
 {
+	SetInfo();
 	VirtStruct A;
 	A.MakeGraph(m_Graph);
-	A.PrintGraph(); 
+	A.PrintGraph();
 	cout << "\n";
 }
 
@@ -235,7 +246,7 @@ void CGraphBase::GetInfo()
 		cout << "Диаметр: " << m_Diameter << "\n";
 	}
 
-	if(m_Radius == 0)
+	if(m_Radius == INT_MAX)
 	{
 		cout << "Радиус: бесконечный\n";
 	}
@@ -268,7 +279,6 @@ void CGraphBase::EditOrient()
 
 	AddOrientEdges(m_Graph);
 	SetInfo();
-	PrintGraph();
 }
 
 void CGraphBase::AddOrientEdges(map<string, vector<CEdge*>>& Graph)
@@ -311,7 +321,7 @@ void CGraphBase::AbsCenter()
 	vector<Edge> rebs; // для упрощения я пихаю все ребра в один вектор
 
 	a = GraphToIntMatrix(false);
-	d = DistanceMatrix(false); 
+	d = DistanceMatrix(false);
 
 	for (int i = 0; i < Count; i++)
 	{
@@ -421,7 +431,7 @@ void CGraphBase::AbsCenter()
 		for (Center s : Centers)
 		{
 			if (s.f == 0) { //если центр - это левая граница ребра
-				if (!CentersSet.count(s.reb.begin)) 
+				if (!CentersSet.count(s.reb.begin))
 				{ //если уже есть во множестве - не выводим
 					cout << "Абсолютный центр: " << Name[s.reb.begin] << endl;
 					CentersSet.insert(s.reb.begin);
@@ -429,16 +439,16 @@ void CGraphBase::AbsCenter()
 				}
 			}
 			else
-				if (s.f == a[s.reb.begin][s.reb.end] * conts) 
+				if (s.f == a[s.reb.begin][s.reb.end] * conts)
 				{ //если центр - это правая граница ребра
-					if (!CentersSet.count(s.reb.end)) 
+					if (!CentersSet.count(s.reb.end))
 					{
 						cout << "Абсолютный центр: " << Name[s.reb.end] << endl;
 						CentersSet.insert(s.reb.end);
 						cout << "Радиус = " << s.k << endl;
 					}
 				}
-				else 
+				else
 				{
 					cout << "Абсолютный центр - это точка на ребре : (" << Name[s.reb.begin] << ", " << Name[s.reb.end] << ") значение: " << s.f / conts << endl;
 					cout << "Радиус = " << s.k << endl;
@@ -447,7 +457,7 @@ void CGraphBase::AbsCenter()
 	}
 	else cout << "Нельзя найти центр в несвязном графе " << endl;
 
-	for (int i = 0; i < Count; i++) 
+	for (int i = 0; i < Count; i++)
 	{
 		delete d[i];
 		delete a[i];
@@ -456,10 +466,10 @@ void CGraphBase::AbsCenter()
 	delete[]a;
 }
 
-void CGraphBase::DFS(map<string, vector<CEdge*>> Graph, 
-						string Node, vector<int>& used, 
-						map<string, int> NodeNumbers, 
-						vector<string>& Cycle, bool NeedPrint)
+void CGraphBase::DFS(map<string, vector<CEdge*>> Graph,
+	string Node, vector<int>& used,
+	map<string, int> NodeNumbers,
+	vector<string>& Cycle, bool NeedPrint)
 {
 
 	if (used[NodeNumbers[Node]]) return;
@@ -499,14 +509,14 @@ double CGraphBase::CalcRadiusOrDiameter(bool IsDiameter)
 	double** edge = DistanceMatrix(IsDiameter);
 
 	std::cout << endl;
-	for (int i = 0; i < NodeCount; i++) 
+	for (int i = 0; i < NodeCount; i++)
 	{
 		for (int j = 0; j < NodeCount; j++)
 		{
 			//if (edge[i][j]> INT_MAX - 1)
 			//	std::cout << "0\t";
 			//else
-				std::cout << edge[i][j] << "\t";
+			std::cout << edge[i][j] << "\t";
 		}
 		std::cout << endl;
 	}
@@ -523,7 +533,7 @@ double CGraphBase::CalcRadiusOrDiameter(bool IsDiameter)
 				if (edge[i][j] > maxI) maxI = edge[i][j];
 		}
 		rad.push_back(maxI);
-		if (IsDiameter ? Result < maxI : Result > maxI) 
+		if (IsDiameter ? Result < maxI : Result > maxI)
 		{
 			Result = maxI;
 		}
@@ -671,7 +681,7 @@ int CGraphBase::lca(int a, int b)
 
 void CGraphBase::MarkPath(int v, int b, int children)
 {
-	while (base[v] != b) 
+	while (base[v] != b)
 	{
 		blossom[base[v]] = blossom[base[match[v]]] = true;
 		p[v] = children;
@@ -690,31 +700,31 @@ int CGraphBase::FindPath(int root)
 	used[root] = true;
 	int qh = 0, qt = 0;
 	q[qt++] = root;
-	while (qh < qt) 
+	while (qh < qt)
 	{
 		int v = q[qh++];
-		for (size_t i = 0; i<g[v].size(); ++i) 
+		for (size_t i = 0; i<g[v].size(); ++i)
 		{
 			int to = g[v][i];
 			if (base[v] == base[to] || match[v] == to)  continue;
-			if (to == root || match[to] != -1 && p[match[to]] != -1) 
+			if (to == root || match[to] != -1 && p[match[to]] != -1)
 			{
 				int curbase = lca(v, to);
 				fill(blossom.begin(), blossom.end(), 0);
 				MarkPath(v, curbase, to);
 				MarkPath(to, curbase, v);
 				for (int i = 0; i<Count; ++i)
-					if (blossom[base[i]]) 
+					if (blossom[base[i]])
 					{
 						base[i] = curbase;
-						if (!used[i]) 
+						if (!used[i])
 						{
 							used[i] = true;
 							q[qt++] = i;
 						}
 					}
 			}
-			else if (p[to] == -1) 
+			else if (p[to] == -1)
 			{
 				p[to] = v;
 				if (match[to] == -1)
@@ -732,10 +742,10 @@ vector<int> CGraphBase::Start()
 {
 	fill(match.begin(), match.end(), -1);
 	for (int i = 0; i<Count; i++)
-		if (match[i] == -1) 
+		if (match[i] == -1)
 		{
 			int v = FindPath(i);
-			while (v != -1) 
+			while (v != -1)
 			{
 				int pv = p[v], ppv = match[pv];
 				match[v] = pv, match[pv] = v;
@@ -762,7 +772,7 @@ vector<vector<int>> CGraphBase::Transform()
 	return g;
 }
 
-void CGraphBase::Matching() 
+void CGraphBase::Matching()
 {
 	Define();
 	g = Transform();
@@ -772,7 +782,7 @@ void CGraphBase::Matching()
 	cout << " Ребра, вошедшие в наибольшее паросочетание:\n";
 	for (int i = 0; i < Count; i++)
 		if (edges[i] != -1 && exclude.count(i) == 0 && exclude.count(edges[i]) == 0) {
-			cout << " " << Name[i] << '-' << Name[edges[i]] << endl; 
+			cout << " " << Name[i] << '-' << Name[edges[i]] << endl;
 			exclude.insert(i);
 			exclude.insert(edges[i]);
 		}

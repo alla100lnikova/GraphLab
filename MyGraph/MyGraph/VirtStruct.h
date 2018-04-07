@@ -26,7 +26,8 @@ typedef struct T
 	Tref Next;
 } Trailer;
 
-class VirtStruct {
+class VirtStruct 
+{
 private:
 
 	Lref Head;
@@ -35,7 +36,8 @@ private:
 	Lref SearchGraph(string);
 	Lref Search(string);
 public:
-	VirtStruct() {
+	VirtStruct() 
+	{
 		Head = Tail = new (Leader);
 	}
 	~VirtStruct(); 

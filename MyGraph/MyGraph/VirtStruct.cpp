@@ -18,7 +18,6 @@ Lref VirtStruct::SearchGraph(string w)
 	h = Head; (*Tail).Key = w;
 	while ((*h).Key != w) h = (*h).Next;
 	if (h == Tail)
-
 	{
 		Tail = new (Leader); (*h).Count = (*h).Count1 = 0;
 		(*h).Trail = (*h).Pred = NULL; (*h).Next = Tail;
@@ -39,18 +38,18 @@ Lref VirtStruct::Search(string w)
 void VirtStruct::MakeGraph(map<string, vector<CEdge*>> Graph)
 {
 	string x, y;
-	Lref p, q;
+	Lref p, q = nullptr;
 	Tref t, r;
 	Boolean Res;
 
 	for (auto edgeList : Graph)
 	{
 		x = edgeList.first;
+		p = SearchGraph(x);
 		for (auto edge : edgeList.second)
 		{
 			y = edge->GetEndNode()->GetLabel();
 			//существует ли в графе дуга (x,y)?
-			p = SearchGraph(x);
 			q = SearchGraph(y);
 			r = (*p).Trail; Res = FALSE;
 			while ((r != NULL) && (!Res))
@@ -65,6 +64,11 @@ void VirtStruct::MakeGraph(map<string, vector<CEdge*>> Graph)
 				t = new (Trailer); (*t).Id = p;
 				(*t).Next = (*q).Pred;  (*q).Pred = t; (*p).Count1++;
 			}
+		}
+
+		if (edgeList.second.size() == 0)
+		{
+			t = new (Trailer); (*t).Id = p;
 		}
 	}
 }

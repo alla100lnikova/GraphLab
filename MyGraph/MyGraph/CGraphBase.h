@@ -62,6 +62,7 @@ private:
 	void AddEdge(map<string, vector<CEdge*>>& Graph, string NodeBegin, string NodeEnd, double Weight);
 	void AddOrientEdges(map<string, vector<CEdge*>>& Graph);
 	void DFS(map<string, vector<CEdge*>> Graph, string Node, vector<int>& used, map<string, int> NodeNumbers, vector<string>& Cycle, bool NeedPrint = false);
+	void DeleteEdgeIn(string NodeBegin, string NodeEnd);
 
 protected:
 	int CalcDegree();
@@ -73,7 +74,6 @@ protected:
 public:
 	CGraphBase();
 	~CGraphBase();
-	//ВАЖНО! После вызова позвать сетинфо и принт
 	void AddNode(string Label);
 	void DeleteNode(string Node);
 	void AddEdge(string NodeBegin, string NodeEnd, double Weight);
@@ -91,6 +91,7 @@ public:
 	void AbsCenter();
 	void Matching();
 	void SetInfo();
+	bool IsThereNode(string Node) { return m_Graph.find(Node) != m_Graph.end(); }
 
 public:
 	virtual void ImportGraph();

@@ -217,8 +217,7 @@ void DoTest()
 				{
 					cout << "\nВведите метку вершины: ";
 					cin >> Label;
-					vector<CEdge*> AdjList = Graph.AdjacentNodeList(Label);
-					if (AdjList.size() != 0)
+					if (Graph.IsThereNode(Label))
 						cout << "Такая вершина есть.\n";
 					else cout << "Вершины нет.\n";
 				}

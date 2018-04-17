@@ -332,31 +332,6 @@ void CGraphBase::AbsCenter()
 		}
 	}
 
-
-	std::cout << endl;
-	for (int i = 0; i < Count; i++) {
-		for (int j = 0; j < Count; j++)
-		{
-			//if (edge[i][j]> INT_MAX - 1)
-			//	std::cout << "0\t";
-			//else
-			std::cout << a[i][j] << "\t";
-		}
-		std::cout << endl;
-	}
-
-	std::cout << endl;
-	for (int i = 0; i < Count; i++) {
-		for (int j = 0; j < Count; j++)
-		{
-			//if (edge[i][j]> INT_MAX - 1)
-			//	std::cout << "0\t";
-			//else
-			std::cout << d[i][j] << "\t";
-		}
-		std::cout << endl;
-	}
-
 	//заполн€ю список ребер
 	map<int, string> Name = NumberToNode();
 	for (int i = 0; i < Count; i++)
@@ -481,13 +456,7 @@ void CGraphBase::DFS(map<string, vector<CEdge*>> Graph,
 		if (!used[NodeNumbers[node->GetEndNode()->GetLabel()]])
 		{
 			DFS(Graph, node->GetEndNode()->GetLabel(), used, NodeNumbers, Cycle, NeedPrint);
-			//remove(Cycle.begin(), Cycle.end() + 1, node->GetEndNode()->GetLabel());
-			//used[NodeNumbers[node->GetEndNode()->GetLabel()]] = 2;
 		}
-		//else (used[NodeNumbers[Node]] == 1)
-		//{
-		//	Cycles.push_back(Cycle);
-		//}
 	}
 }
 
@@ -507,19 +476,6 @@ double CGraphBase::CalcRadiusOrDiameter(bool IsDiameter)
 {
 	int NodeCount = m_Graph.size();
 	double** edge = DistanceMatrix(IsDiameter);
-
-	std::cout << endl;
-	for (int i = 0; i < NodeCount; i++)
-	{
-		for (int j = 0; j < NodeCount; j++)
-		{
-			//if (edge[i][j]> INT_MAX - 1)
-			//	std::cout << "0\t";
-			//else
-			std::cout << edge[i][j] << "\t";
-		}
-		std::cout << endl;
-	}
 
 	double Result = IsDiameter ? INT_MIN : INT_MAX;
 	double maxI = INT_MIN;

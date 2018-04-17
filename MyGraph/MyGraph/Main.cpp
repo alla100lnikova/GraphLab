@@ -241,10 +241,10 @@ void DoTest()
 
 		Graph.DeleteGraph();
 	}
-	catch(...)
+	catch(int e)
 	{
 		Graph.DeleteGraph();
-		throw;
+		throw 0;
 	}
 
 }
@@ -258,7 +258,7 @@ void main()
 	{
 		DoTest();
 	}
-	catch (...)
+	catch (int e)
 	{
 		DoTest();
 	}
